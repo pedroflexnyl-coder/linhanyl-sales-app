@@ -17,9 +17,8 @@ export function LoginForm() {
           name="password"
           required
           autoFocus
-          inputMode="numeric"
           autoComplete="current-password"
-          placeholder="••••"
+          placeholder="Sua senha"
           className="rounded-xl border border-border bg-surface px-4 py-3 text-lg outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
         />
       </label>
