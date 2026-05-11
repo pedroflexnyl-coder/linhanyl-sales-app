@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#2d7a2d"/>
+  <g fill="#ffffff">
+    <path d="M160 120 L160 392 L240 392 L240 200 L320 320 L320 120 L240 120 L240 312 L160 192 Z"/>
+  </g>
+  <text x="256" y="450" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="40" font-weight="700" fill="#ffffff" opacity="0.85">Linhanyl</text>
+</svg>
