@@ -16,6 +16,14 @@ export function getPublicClient() {
   return createClient(url, anonKey, { auth: { persistSession: false } });
 }
 
+// Browser client — uses publishable key. Safe to call from client components.
+export function getBrowserClient() {
+  if (!url || !anonKey) {
+    throw new Error("Supabase não configurado.");
+  }
+  return createClient(url, anonKey, { auth: { persistSession: false } });
+}
+
 // Server-side admin client — only for server actions/routes guarded by admin auth
 export function getAdminClient() {
   if (!url || !serviceKey) {
