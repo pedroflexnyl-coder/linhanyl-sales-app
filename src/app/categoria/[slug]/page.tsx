@@ -1,12 +1,17 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { FileText, ImageIcon, Download } from "lucide-react";
 import { Header } from "@/components/Header";
 import { getCategoria } from "@/lib/categorias";
 import { getPublicClient, type Documento } from "@/lib/supabase";
+import { getEmpresa } from "@/lib/auth";
+import type { EmpresaSlug } from "@/lib/empresas";
 
 type Params = { slug: string };
 
-async function fetchDocumentos(categoria: string): Promise<{
+async function fetchDocumentos(
+  categoria: string,
+  empresa: EmpresaSlug
+): Promise<{
   docs: Documento[];
   erro?: string;
 }> {
@@ -16,6 +21,7 @@ async function fetchDocumentos(categoria: string): Promise<{
       .from("documentos")
       .select("*")
       .eq("categoria", categoria)
+      .eq("empresa", empresa)
       .order("criado_em", { ascending: false });
     if (error) return { docs: [], erro: error.message };
     return { docs: (data ?? []) as Documento[] };
@@ -44,11 +50,14 @@ export default async function CategoriaPage({
   const categoria = getCategoria(slug);
   if (!categoria) notFound();
 
-  const { docs, erro } = await fetchDocumentos(slug);
+  const empresa = await getEmpresa();
+  if (!empresa) redirect("/selecionar");
+
+  const { docs, erro } = await fetchDocumentos(slug, empresa);
 
   return (
     <>
-      <Header backHref="/home" title={categoria.titulo} />
+      <Header backHref="/home" title={categoria.titulo} empresa={empresa} />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
         {erro && (
           <div className="mb-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200">

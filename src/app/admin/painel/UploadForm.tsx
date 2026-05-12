@@ -5,6 +5,7 @@ import { Upload } from "lucide-react";
 import { createUploadUrlAction, confirmUploadAction } from "@/actions/admin";
 import { getBrowserClient, BUCKET } from "@/lib/supabase";
 import { CATEGORIAS } from "@/lib/categorias";
+import { EMPRESAS_LISTA } from "@/lib/empresas";
 
 const MAX_FILE_MB = 50;
 
@@ -21,11 +22,16 @@ export function UploadForm() {
 
     const formEl = e.currentTarget;
     const data = new FormData(formEl);
+    const empresa = String(data.get("empresa") ?? "");
     const categoria = String(data.get("categoria") ?? "");
     const titulo = String(data.get("titulo") ?? "").trim();
     const descricao = String(data.get("descricao") ?? "").trim();
     const file = data.get("arquivo") as File | null;
 
+    if (!empresa) {
+      setFeedback({ kind: "error", text: "Selecione a empresa." });
+      return;
+    }
     if (!categoria) {
       setFeedback({ kind: "error", text: "Selecione uma categoria." });
       return;
@@ -47,7 +53,7 @@ export function UploadForm() {
     }
 
     startTransition(async () => {
-      const prep = await createUploadUrlAction(categoria, titulo, file.name);
+      const prep = await createUploadUrlAction(empresa, categoria, titulo, file.name);
       if (!prep.ok) {
         setFeedback({ kind: "error", text: prep.error });
         return;
@@ -70,6 +76,7 @@ export function UploadForm() {
 
       const ext = (file.name.split(".").pop() ?? "bin").toLowerCase();
       const result = await confirmUploadAction(
+        empresa,
         categoria,
         titulo,
         descricao,
@@ -92,6 +99,25 @@ export function UploadForm() {
 
   return (
     <form ref={formRef} onSubmit={onSubmit} className="flex flex-col gap-3">
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted">Empresa</span>
+        <select
+          name="empresa"
+          required
+          defaultValue=""
+          className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
+        >
+          <option value="" disabled>
+            Selecione...
+          </option>
+          {EMPRESAS_LISTA.map((e) => (
+            <option key={e.slug} value={e.slug}>
+              {e.nome}
+            </option>
+          ))}
+        </select>
+      </label>
+
       <label className="flex flex-col gap-1">
         <span className="text-xs font-medium text-muted">Categoria</span>
         <select

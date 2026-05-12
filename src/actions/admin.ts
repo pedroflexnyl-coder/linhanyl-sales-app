@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { isAdminAuthed } from "@/lib/auth";
 import { getAdminClient, BUCKET } from "@/lib/supabase";
+import { isEmpresaSlug } from "@/lib/empresas";
 
 const CATEGORIAS_VALIDAS = new Set([
   "catalogo",
@@ -27,12 +28,16 @@ export type CreateUploadUrlResult =
   | { ok: false; error: string };
 
 export async function createUploadUrlAction(
+  empresa: string,
   categoria: string,
   titulo: string,
   filename: string
 ): Promise<CreateUploadUrlResult> {
   if (!(await isAdminAuthed())) {
     return { ok: false, error: "Não autorizado." };
+  }
+  if (!isEmpresaSlug(empresa)) {
+    return { ok: false, error: "Empresa inválida." };
   }
   if (!CATEGORIAS_VALIDAS.has(categoria)) {
     return { ok: false, error: "Categoria inválida." };
@@ -42,7 +47,7 @@ export async function createUploadUrlAction(
   }
 
   const ext = (filename.split(".").pop() ?? "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
-  const path = `${categoria}/${Date.now()}-${slugify(titulo)}.${ext}`;
+  const path = `${empresa}/${categoria}/${Date.now()}-${slugify(titulo)}.${ext}`;
 
   const supabase = getAdminClient();
   const { data, error } = await supabase.storage
@@ -66,6 +71,7 @@ export async function createUploadUrlAction(
 export type ConfirmUploadResult = { ok: true } | { ok: false; error: string };
 
 export async function confirmUploadAction(
+  empresa: string,
   categoria: string,
   titulo: string,
   descricao: string,
@@ -75,6 +81,9 @@ export async function confirmUploadAction(
 ): Promise<ConfirmUploadResult> {
   if (!(await isAdminAuthed())) {
     return { ok: false, error: "Não autorizado." };
+  }
+  if (!isEmpresaSlug(empresa)) {
+    return { ok: false, error: "Empresa inválida." };
   }
   if (!CATEGORIAS_VALIDAS.has(categoria)) {
     return { ok: false, error: "Categoria inválida." };
@@ -89,6 +98,7 @@ export async function confirmUploadAction(
 
   const supabase = getAdminClient();
   const { error } = await supabase.from("documentos").insert({
+    empresa,
     categoria,
     titulo: titulo.trim(),
     descricao: descricao.trim() || null,

@@ -36,6 +36,7 @@ export function getAdminClient() {
 
 export type Documento = {
   id: string;
+  empresa: "linhanyl" | "flexnyl";
   categoria: string;
   titulo: string;
   descricao: string | null;

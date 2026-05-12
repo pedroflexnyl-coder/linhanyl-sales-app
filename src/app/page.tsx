@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { isRepAuthed } from "@/lib/auth";
+import { isRepAuthed, getEmpresa } from "@/lib/auth";
 import { LogoBlock } from "@/components/Logo";
 import { LoginForm } from "./LoginForm";
 
 export default async function Page() {
-  if (await isRepAuthed()) redirect("/home");
+  if (await isRepAuthed()) {
+    const empresa = await getEmpresa();
+    redirect(empresa ? "/home" : "/selecionar");
+  }
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-12">

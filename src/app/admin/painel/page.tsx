@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { CATEGORIAS } from "@/lib/categorias";
+import { EMPRESAS_LISTA } from "@/lib/empresas";
 import { getAdminClient, type Documento } from "@/lib/supabase";
 import { UploadForm } from "./UploadForm";
 import { DocumentoRow } from "./DocumentoRow";
@@ -27,13 +28,6 @@ async function listarDocumentos(): Promise<{
 export default async function PainelPage() {
   const { docs, erro } = await listarDocumentos();
 
-  const porCategoria = new Map<string, Documento[]>();
-  for (const d of docs) {
-    const lista = porCategoria.get(d.categoria) ?? [];
-    lista.push(d);
-    porCategoria.set(d.categoria, lista);
-  }
-
   return (
     <>
       <Header title="Painel administrativo" variant="admin" />
@@ -55,7 +49,7 @@ export default async function PainelPage() {
             Adicionar material
           </h2>
           <p className="mb-4 text-sm text-muted">
-            PDFs, imagens ou documentos. Tamanho máximo: 20MB.
+            PDFs, imagens ou documentos. Tamanho máximo: 50MB.
           </p>
           <UploadForm />
         </section>
@@ -73,20 +67,47 @@ export default async function PainelPage() {
             </div>
           )}
 
-          <div className="flex flex-col gap-6">
-            {CATEGORIAS.map((cat) => {
-              const lista = porCategoria.get(cat.slug) ?? [];
-              if (lista.length === 0) return null;
+          <div className="flex flex-col gap-8">
+            {EMPRESAS_LISTA.map((emp) => {
+              const daEmpresa = docs.filter((d) => d.empresa === emp.slug);
+              if (daEmpresa.length === 0) return null;
+
+              const porCategoria = new Map<string, Documento[]>();
+              for (const d of daEmpresa) {
+                const lista = porCategoria.get(d.categoria) ?? [];
+                lista.push(d);
+                porCategoria.set(d.categoria, lista);
+              }
+
               return (
-                <div key={cat.slug}>
-                  <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted">
-                    {cat.titulo} ({lista.length})
+                <div key={emp.slug}>
+                  <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-brand">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-brand text-xs text-white">
+                      {emp.nome[0]}
+                    </span>
+                    {emp.nome}
+                    <span className="text-xs font-normal text-muted">
+                      ({daEmpresa.length})
+                    </span>
                   </h3>
-                  <ul className="flex flex-col gap-2">
-                    {lista.map((doc) => (
-                      <DocumentoRow key={doc.id} doc={doc} />
-                    ))}
-                  </ul>
+                  <div className="flex flex-col gap-4">
+                    {CATEGORIAS.map((cat) => {
+                      const lista = porCategoria.get(cat.slug) ?? [];
+                      if (lista.length === 0) return null;
+                      return (
+                        <div key={cat.slug}>
+                          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+                            {cat.titulo} ({lista.length})
+                          </h4>
+                          <ul className="flex flex-col gap-2">
+                            {lista.map((doc) => (
+                              <DocumentoRow key={doc.id} doc={doc} />
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}

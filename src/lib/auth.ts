@@ -1,7 +1,10 @@
 import { cookies } from "next/headers";
+import { isEmpresaSlug, type EmpresaSlug } from "./empresas";
 
 const REP_COOKIE = "linhanyl_rep";
 const ADMIN_COOKIE = "linhanyl_admin";
+const EMPRESA_COOKIE = "linhanyl_empresa";
+
 const COOKIE_OPTS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
@@ -18,6 +21,22 @@ export async function isRepAuthed(): Promise<boolean> {
 export async function isAdminAuthed(): Promise<boolean> {
   const store = await cookies();
   return store.get(ADMIN_COOKIE)?.value === "1";
+}
+
+export async function getEmpresa(): Promise<EmpresaSlug | null> {
+  const store = await cookies();
+  const v = store.get(EMPRESA_COOKIE)?.value;
+  return v && isEmpresaSlug(v) ? v : null;
+}
+
+export async function setEmpresa(empresa: EmpresaSlug): Promise<void> {
+  const store = await cookies();
+  store.set(EMPRESA_COOKIE, empresa, COOKIE_OPTS);
+}
+
+export async function clearEmpresa(): Promise<void> {
+  const store = await cookies();
+  store.delete(EMPRESA_COOKIE);
 }
 
 export async function loginRep(password: string): Promise<boolean> {
@@ -39,6 +58,7 @@ export async function loginAdmin(password: string): Promise<boolean> {
 export async function logoutRep(): Promise<void> {
   const store = await cookies();
   store.delete(REP_COOKIE);
+  store.delete(EMPRESA_COOKIE);
 }
 
 export async function logoutAdmin(): Promise<void> {

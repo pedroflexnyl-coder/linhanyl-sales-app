@@ -1,49 +1,26 @@
+import { redirect } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Phone, Mail, MessageCircle, MapPin } from "lucide-react";
+import { getEmpresa } from "@/lib/auth";
+import { CONTATOS_POR_EMPRESA } from "@/lib/contatos";
+import { EMPRESAS } from "@/lib/empresas";
 
-type Contato = {
-  setor: string;
-  descricao?: string;
-  telefone?: string;
-  whatsapp?: string;
-  email?: string;
-};
+export default async function ContatosPage() {
+  const empresa = await getEmpresa();
+  if (!empresa) redirect("/selecionar");
 
-// Placeholders — atualizar com os dados reais da Linhanyl
-const CONTATOS: Contato[] = [
-  {
-    setor: "Fábrica / SAC",
-    telefone: "(00) 0000-0000",
-    email: "sac@linhanyl.com.br",
-  },
-  {
-    setor: "Financeiro",
-    telefone: "(00) 0000-0000",
-    email: "financeiro@linhanyl.com.br",
-  },
-  {
-    setor: "Expedição / Logística",
-    telefone: "(00) 0000-0000",
-  },
-  {
-    setor: "Suporte ao Representante",
-    whatsapp: "5500000000000",
-    email: "comercial@linhanyl.com.br",
-  },
-];
+  const { contatos, endereco } = CONTATOS_POR_EMPRESA[empresa];
+  const emp = EMPRESAS[empresa];
 
-const ENDERECO = {
-  texto: "Endereço da fábrica — atualizar",
-  mapsUrl: "https://www.linhanyl.com.br",
-};
-
-export default function ContatosPage() {
   return (
     <>
-      <Header backHref="/home" title="Contatos Úteis" />
+      <Header backHref="/home" title="Contatos Úteis" empresa={empresa} />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
+        <p className="mb-4 text-sm text-muted">
+          Contatos da <span className="font-semibold text-brand">{emp.nome}</span>.
+        </p>
         <ul className="flex flex-col gap-3">
-          {CONTATOS.map((c) => (
+          {contatos.map((c) => (
             <li
               key={c.setor}
               className="rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-border"
@@ -92,9 +69,9 @@ export default function ContatosPage() {
             <h2 className="text-base font-semibold text-foreground">
               Endereço
             </h2>
-            <p className="mt-1 text-sm text-muted">{ENDERECO.texto}</p>
+            <p className="mt-1 text-sm text-muted">{endereco.texto}</p>
             <a
-              href={ENDERECO.mapsUrl}
+              href={endereco.mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 inline-flex items-center gap-2 rounded-xl bg-brand/10 px-3 py-2 text-sm font-medium text-brand active:scale-[0.98]"
@@ -108,7 +85,7 @@ export default function ContatosPage() {
         <p className="mt-6 text-center text-xs text-muted">
           Para atualizar contatos, editar{" "}
           <code className="rounded bg-background px-1 py-0.5">
-            src/app/contatos/page.tsx
+            src/lib/contatos.ts
           </code>
         </p>
       </main>
